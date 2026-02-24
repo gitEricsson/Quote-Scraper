@@ -36,14 +36,6 @@
   - A global `asyncio.Semaphore` limits the number of in-flight HTTP requests (e.g. 10 at once).
   - An `asyncio.sleep(0.5)` before each outbound request provides a simple delay to avoid overwhelming the server and to be polite with traffic.
 
-### One challenge and how it was addressed
-
-- **Challenge**: Combining asynchronous scraping with caching and concurrency limits in a way that avoids duplicate work and keeps the code reasonably simple.
-- **Solution**: Introduced a small async-safe caching layer:
-  - A global `author_cache` dictionary keyed by author URL.
-  - An `asyncio.Lock` to guard updates to the cache, so only one task writes for a given author while others reuse the stored data.
-  - All author fetches run concurrently via `asyncio.gather`, but the semaphore and lock keep concurrency bounded and cache updates safe.
-
 ### Logging and timing
 
 - **Logging**: The scraper uses Python’s `logging` module. On run, `main()` calls `logging.basicConfig()` with a timestamped format at `INFO` level. `QuoteScraper` logs page URLs being scraped, quote counts per page, non-200 responses, and fetch errors (with retry attempt).
@@ -58,6 +50,14 @@
   - **Parsing**: `test_scrape_quotes_page_parses_quote_and_author` uses a `DummyScraper` (subclass of `QuoteScraper` that overrides `get_soup` with fixed HTML) to assert quote text, author name, tags, and author profile fields are parsed correctly—no live HTTP requests.
 - **Run tests** (from project root):
   - `pytest`
+
+### One challenge and how it was addressed
+
+- **Challenge**: Combining asynchronous scraping with caching and concurrency limits in a way that avoids duplicate work and keeps the code reasonably simple.
+- **Solution**: I introduced a small async-safe caching layer:
+  - A global `author_cache` dictionary keyed by author URL.
+  - An `asyncio.Lock` to guard updates to the cache, so only one task writes for a given author while others reuse the stored data.
+  - All author fetches run concurrently via `asyncio.gather`, but the semaphore and lock keep concurrency bounded and cache updates safe.
 
 ### One improvement with more time
 
@@ -78,4 +78,3 @@
 5. **Outputs** (paths from `Config`):
    - `quotes.csv`: All quotes with author and birth details; tags as a comma-separated string.
    - `quotes.json`: Same data as a list of JSON objects; `tags` as a list of strings.
-
