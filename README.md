@@ -11,6 +11,8 @@
 - **Session management**: A single `aiohttp.ClientSession` is created per run and reused for all requests (persistent connections + consistent headers).
 - **Outputs**: Data is saved to CSV (`quotes.csv`) and JSON (`quotes.json`) as configured in `Config`.
 
+> **NB:** I did not use Scrapy for this task due to its simplicity. For larger-scale scraping projects or more complex requirements, Scrapy would be a more appropriate and scalable framework.
+
 ### Pagination and navigation
 
 - **Pagination**: Starting from the base URL (`https://quotes.toscrape.com/`), the script:
